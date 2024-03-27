@@ -6,11 +6,11 @@
 
 ## Step-2: Clone the Repo
 
-      $ git clone https://gitlab.com/rns-devops/terraform.git
+      $ git clone {clone - ansible_student_app}
 
 ## Step-3: Open the project in atom
 
-      $ cd terraform/7.ansible_student_app && atom .
+      $ cd terraform/ansible_student_app && atom .
 
 ## Step-4: in GitBash run the terraform commands
 
