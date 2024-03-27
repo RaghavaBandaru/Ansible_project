@@ -1,0 +1,92 @@
+- name: Install Java
+  shell: "amazon-linux-extras install java-openjdk11 -y"
+  notify: Restart Tomcat
+  become: yes
+
+- name: Install Maven build tool
+  package:
+    name: maven
+    state: present
+
+- name: Check a tomcat directory exists or not
+  stat:
+    path: "{{TOMCAT_HOME}}"
+  register: tomcat_dir_check
+
+- name: Check the Tomact Home directory
+  debug: var=tomcat_dir_check
+
+- name: Download Tomcat
+  unarchive:
+    src: "{{TOMCAT_URL}}"
+    dest: "/opt/"
+    remote_src: yes
+      #  when: tomcat_dir_check.stat.exists|bool == false
+  notify: Restart Tomcat
+
+- name: Set the devops user owner and group
+  file:
+    path: "{{TOMCAT_HOME}}"
+    state: directory
+    owner: devops
+    group: devops
+    recurse: yes
+
+
+- name: Clone a github repository
+  git:
+    repo: https://gitlab.com/rns-app/student-app.git
+    dest: /home/devops/studentapp/
+    clone: yes
+    update: yes
+
+- name: Download JDBC Jar file
+  copy:
+    src: "files/tomcat/lib/mysql-connector.jar"
+    dest: "{{TOMCAT_HOME}}/lib/"
+  notify: Restart Tomcat
+
+- name: Update Tomcat Context Configuration with Database Details
+  template:
+    src: context.xml.j2
+    dest: "{{TOMCAT_HOME}}/conf/context.xml"
+  notify: Restart Tomcat
+
+- name: Update Tomcat Users file
+  copy:
+    src: "files/tomcat/conf/tomcat-users.xml"
+    dest: "{{TOMCAT_HOME}}/conf/"
+  notify: Restart Tomcat
+
+- name: Update manager context file
+  copy:
+    src: "files/tomcat/manager/context.xml"
+    dest: "{{TOMCAT_HOME}}/webapps/manager/META-INF/"
+  notify: Restart Tomcat
+
+- name: Download Tomcat Init script
+  copy:
+    src: "files/tomcat/tomcat-init"
+    dest: /etc/systemd/system/tomcat.service
+    mode: u=rwx,g=rx,o=rx
+  become: yes
+
+- name: Reload Systemctl service
+  systemd:
+    daemon_reload: yes
+
+- name: Copy the Build Script
+  copy:
+    src: "files/scripts/build.sh"
+    dest: /home/devops/
+    mode: u=rwx,g=rx,o=rx
+
+- name: Build it and Deploy the Application
+  shell: "sed -i -e 's/\r$//' /home/devops/build.sh && /home/devops/build.sh"
+  become: yes
+
+- name: Start Tomcat Service
+  service:
+    name: tomcat
+    state: started
+  become: yes

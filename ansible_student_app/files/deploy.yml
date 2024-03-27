@@ -1,0 +1,23 @@
+- name: DO deploy
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    - name: Find Old deployments
+      find:
+        paths: /home/student/apache-tomcat-9.0.85/webapps
+        file_type: any
+      register: OUT
+
+    - name: Delete all old files
+      file:
+        path: "{{item.path}}"
+        state: absent
+      loop: "{{OUT.files}}"
+      become: yes
+
+    - name: Download new war file
+      get_url:
+        url: "http://nexus.devopsproj.com:8081/repository/studentapp-releases/com/jdevs/studentapp/{{RELEASE_VERSION}}-RELEASE/studentapp-{{RELEASE_VERSION}}-RELEASE.war"
+        dest: /home/student/apache-tomcat-9.0.85/webapps/student.war
+      become_user: student

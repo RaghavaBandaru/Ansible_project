@@ -1,0 +1,3 @@
+TOMCAT_VERSION: 9.0.85
+TOMCAT_URL: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+TOMCAT_HOME: /opt/apache-tomcat-9.0.85

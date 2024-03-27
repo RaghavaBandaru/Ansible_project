@@ -1,0 +1,48 @@
+- name: Enable nginx for amazon linux 2
+  command: "amazon-linux-extras enable nginx1"
+  become: yes
+
+- name: Install Nginx Web Server
+  package:
+    name: nginx
+    state: present
+
+- name: Find all default nginx web content files
+  find:
+    paths: /usr/share/nginx/html/
+    file_type: any
+  register: OUT
+
+- name: Delete the default nginx web content files
+  file:
+    path: "{{item.path}}"
+    state: absent
+  loop: "{{OUT.files}}"
+  become: yes
+
+- name: Clone a github repository of static Application
+  git:
+    repo: https://gitlab.com/raghavabandaru854/static-project.git
+    dest: /tmp/project/
+    clone: yes
+    update: yes
+
+- name: Download studentapp  web-content
+  shell: "cp -R /tmp/project/iPortfolio/* /usr/share/nginx/html/"
+  become: yes
+
+# - name: Copy configuration file
+#  copy:
+#  src: nginx.conf
+#    dest: /etc/nginx/nginx.conf
+
+- name: Copy configuration file
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Start the Nginx Service
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes

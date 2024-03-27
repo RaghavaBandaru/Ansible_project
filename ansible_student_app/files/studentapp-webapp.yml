@@ -1,0 +1,20 @@
+- name: Install & Configure Nginx Server
+  hosts: webserver
+  become: yes
+  roles:
+    - nginx
+  vars:
+    - TOMCAT_HOST: "{{ hostvars.app.ansible_host }}"
+    - locations: [student]
+
+- name: Install & Configure Tomcat and DB Server
+  hosts: appserver
+  become: yes
+  roles:
+    - mariadb
+    - tomcat
+  vars:
+    - DBUSER: student
+    - DBPASS: student1
+    - DBNAME: studentapp
+    - DBHOST: localhost

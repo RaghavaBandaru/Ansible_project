@@ -1,0 +1,6 @@
+- name: Check Memory 
+  fail:
+    msg: "Memory required to install Nginx is more than {{MIN_MEMORY}} , but found only {{ansible_memtotal_mb}}."
+  when: ansible_memtotal_mb <= MIN_MEMORY 
+
+

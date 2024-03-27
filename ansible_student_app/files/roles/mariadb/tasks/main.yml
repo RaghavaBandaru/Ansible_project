@@ -1,0 +1,20 @@
+- name: Install MariaDB
+  package:
+    name: mariadb-server
+    state: present
+
+- name: Start Service
+  service:
+    name: mariadb
+    enabled: yes
+    state: started
+
+- name: Clone a github repository
+  git:
+    repo: https://gitlab.com/raghavabandaru854/student-app.git
+    dest: /tmp/studentapp/
+    clone: yes
+    update: yes
+
+- name: Load Schema
+  shell: mysql -uroot < /tmp/studentapp/dbscript/studentapp.sql
